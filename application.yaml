@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    username: root
+    password: testtest
+    url: jdbc:mysql://localhost:3306/search_engine?useSSL=false&requireSSL=false&allowPublicKeyRetrieval=true
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+indexing-settings:
+  sites:
+    - url: http://www.playback.ru/
+      name: Интернет-магазин playback
+    - url: https://www.lutherancathedral.ru/
+      name: Собор Петра и Павла
+    - url: https://ipfran.ru/
+      name: ИПФ РАН
+    - url: https://www.svetlovka.ru/
+      name: Библиотека им. М.А. Светлова
+
+connect:
+  useragent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.53 Safari/537.36
+  referrer: http://www.google.com
+
+file:
+  extensions: pdf|PDF|docx?|DOCX?|xlsx?|XLSX?|pptx?|PPTX?|jpe?g|JPE?G|gif|GIF|png|PNG|mp3|MP3|mp4|MP4|aac|AAC|json|JSON|csv|CSV|exe|EXE|apk|APK|rar|RAR|zip|ZIP|xml|XML|jar|JAR|bin|BIN|svg|SVG|nc|NC|webp|WEBP|m|M|fig|FIG|eps|EPS
+
+selector:
+  weight:
+    title: 1.0
+    body: 0.8
+
+snippet:
+  border: 5
+
+page:
+  frequency:
+    limit: 95
+
+error:
+  interrupted: Indexing stopped by user
+  certificate: Site's certificate validity check failed
+  unknown: Unknown error
