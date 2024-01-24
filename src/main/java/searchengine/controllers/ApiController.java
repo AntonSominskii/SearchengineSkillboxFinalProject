@@ -41,8 +41,8 @@ public class ApiController {
         return indexingService.indexPage(path);
     }
 
-    @GetMapping("/query")
-    public ResponseEntity<QueryResponseData> query(
+    @GetMapping("/search")
+    public ResponseEntity<QueryResponseData> search(
             @RequestParam(name="query", required = false) String query,
             @RequestParam(name="site", required = false) String site,
             @RequestParam(name="offset", required = false) Integer offset,
