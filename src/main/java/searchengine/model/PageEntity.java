@@ -14,7 +14,7 @@ import java.util.List;
 @Entity
 @Table(name = "Pages",
         indexes = @Index(name = "path_index", columnList = "path"),
-        uniqueConstraints = { @UniqueConstraint(columnNames = { "path", "site_id" }) }
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"path", "site_id"})}
 )
 public class PageEntity {
 

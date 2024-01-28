@@ -37,16 +37,16 @@ public class ApiController {
     }
 
     @PostMapping("/indexPage")
-    public ResponseEntity<ActionResponse> indexPage(@RequestParam(name="url", required = false) String path) {
+    public ResponseEntity<ActionResponse> indexPage(@RequestParam(name = "url", required = false) String path) {
         return indexingService.indexPage(path);
     }
 
     @GetMapping("/search")
     public ResponseEntity<QueryResponseData> search(
-            @RequestParam(name="query", required = false) String query,
-            @RequestParam(name="site", required = false) String site,
-            @RequestParam(name="offset", required = false) Integer offset,
-            @RequestParam(name="limit", required = false) Integer limit
+            @RequestParam(name = "query", required = false) String query,
+            @RequestParam(name = "site", required = false) String site,
+            @RequestParam(name = "offset", required = false) Integer offset,
+            @RequestParam(name = "limit", required = false) Integer limit
     ) {
         logger.info("Search request received: query={}, site={}, offset={}, limit={}", query, site, offset, limit);
         ResponseEntity<QueryResponseData> response = searchService.search(query, site, offset, limit);

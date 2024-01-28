@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class LemmaServiceImplTest {
 
     private final LemmaService lemmaService;
-
     private String text;
     private Map<String, Integer> expectedMap;
 

@@ -13,15 +13,14 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  http:
+    connect-timeout: 10000
+    read-timeout: 10000
 
 indexing-settings:
   sites:
     - url: http://www.playback.ru/
       name: Интернет-магазин playback
-    - url: https://www.lutherancathedral.ru/
-      name: Собор Петра и Павла
-    - url: https://ipfran.ru/
-      name: ИПФ РАН
     - url: https://www.svetlovka.ru/
       name: Библиотека им. М.А. Светлова
 

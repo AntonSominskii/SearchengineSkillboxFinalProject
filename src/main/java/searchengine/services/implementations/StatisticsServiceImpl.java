@@ -33,7 +33,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         total.setIndexing(isIndexing());
         List<DetailedStatisticsItem> detailed = new ArrayList<>();
         List<SiteEntity> siteEntityList = siteRepository.findAll();
-        for(SiteEntity siteEntity : siteEntityList) {
+        for (SiteEntity siteEntity : siteEntityList) {
             DetailedStatisticsItem item = new DetailedStatisticsItem();
             item.setName(siteEntity.getName());
             String siteUrl = siteEntity.getUrl();
