@@ -55,5 +55,8 @@ class LemmaServiceImplTest {
     void getLemmasCountMap() {
         Map<String, Integer> actualMap = lemmaService.getLemmasCountMap(text);
         assertEquals(expectedMap, actualMap);
+
+        System.out.println("Ожидаемый результат: " + expectedMap);
+        System.out.println("Фактический результат: " + actualMap);
     }
 }

@@ -36,9 +36,6 @@ selector:
     title: 1.0
     body: 0.8
 
-snippet:
-  border: 5
-
 page:
   frequency:
     limit: 95

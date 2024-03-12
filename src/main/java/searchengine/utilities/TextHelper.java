@@ -45,38 +45,6 @@ public class TextHelper {
         return path;
     }
 
-    public String buildSnippet(List<String> textList, List<Integer> lemmasPositions, int snippetBorder) {
-        BUILDER.setLength(0);
-        int start = 0;
-        int end = -1;
-
-        Map<Integer, Integer> snippetsBorders = lemmasPositions.stream()
-                .collect(TreeMap::new, (map, i) -> map.put(i - snippetBorder, i + snippetBorder), Map::putAll);
-        for (Map.Entry<Integer, Integer> entry : snippetsBorders.entrySet()) {
-            if (entry.getKey() <= end) {
-                end = entry.getValue();
-                continue;
-            }
-            buildString(textList, lemmasPositions, start, end);
-            start = entry.getKey();
-            if (start < 0) {
-                start = 0;
-            }
-            end = entry.getValue();
-            if (end >= textList.size()) {
-                end = textList.size() - 1;
-            }
-            if (isLastEntry(entry, lemmasPositions, snippetBorder)) {
-                buildString(textList, lemmasPositions, start, end);
-            }
-        }
-        if (BUILDER.toString().isEmpty()) {
-            end = textList.size() - 1;
-            buildString(textList, lemmasPositions, start, end);
-        }
-        return BUILDER.toString();
-    }
-
     public boolean isStringExists(String s) {
         return !(s == null || s.matches("\\s+") || s.isEmpty());
     }

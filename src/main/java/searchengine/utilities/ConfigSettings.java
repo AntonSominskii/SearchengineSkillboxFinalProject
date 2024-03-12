@@ -14,9 +14,6 @@ public class ConfigSettings {
     @Value("${connect.referrer}")
     private String referrer;
 
-    @Value("${snippet.border}")
-    private int snippetBorder;
-
     @Value("${file.extensions}")
     private String fileExtensions;
 

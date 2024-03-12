@@ -22,7 +22,9 @@ import searchengine.utilities.ConfigSettings;
 import searchengine.utilities.TextHelper;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -250,28 +252,29 @@ public class SearchServiceImpl implements SearchService {
         String documentText = document.text();
         List<String> textList = new ArrayList<>(Arrays.asList(documentText.split("\\s+")));
         List<String> textListLemmatized = lemmaService.getLemmatizedList(textList);
-
-        Map<Integer, String> textMapLemmatized =
-                textListLemmatized.stream().collect(HashMap::new, (map, s) -> map.put(map.size(), s), Map::putAll);
+        Map<Integer, String> textMapLemmatized = IntStream.range(0, textListLemmatized.size()).boxed()
+                .collect(Collectors.toMap(Function.identity(), textListLemmatized::get));
         Map<Integer, String> filteredTextMapLemmatized = textMapLemmatized.entrySet().stream()
-                .filter(e -> {
-                    for (String queryWord : querySet) {
-                        if (queryWord.equals(e.getValue())) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }).collect(HashMap::new, (map, e) -> map.put(e.getKey(), e.getValue()), Map::putAll);
-        List<Integer> lemmasPositions = new ArrayList<>(filteredTextMapLemmatized.keySet());
-        lemmasPositions.sort(Integer::compareTo);
-
-        if (lemmasPositions.isEmpty()) {
+                .filter(e -> querySet.contains(e.getValue()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Integer middlePosition = filteredTextMapLemmatized.keySet().stream()
+                .min(Comparator.comparingInt(i -> Math.abs(i - textListLemmatized.size() / 2)))
+                .orElse(null);
+        if (middlePosition == null) {
             return "";
         }
-        String fullSnippet = TextHelper.buildSnippet(textList, lemmasPositions, properties.getSnippetBorder());
-        String[] snippetParts = fullSnippet.split("&emsp;&emsp;");
-        String finalSnippet = Arrays.stream(snippetParts).max(Comparator.comparingInt(String::length)).orElse("");
-        return "... ".concat(finalSnippet).concat(" ...");
+        int start = Math.max(0, middlePosition - 100 / (2 * 5)); // Средняя длина слова ~5 символов
+        int end = Math.min(textList.size(), start + 200 / 5);
+        StringBuilder snippetBuilder = new StringBuilder();
+        for (int i = start; i < end; i++) {
+            if (filteredTextMapLemmatized.containsKey(i)) {
+                snippetBuilder.append("<b>").append(textList.get(i)).append("</b> ");
+            } else {
+                snippetBuilder.append(textList.get(i)).append(" ");
+            }
+        }
+        String snippet = snippetBuilder.toString().trim();
+        return snippet.length() > 200 ? snippet.substring(0, 200) + "..." : snippet;
     }
 
     private List<LemmaEntity> getFrequentLemmas(List<SiteEntity> siteEntityList, List<LemmaEntity> lemmaList) {
