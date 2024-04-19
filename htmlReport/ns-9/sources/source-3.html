@@ -1,0 +1,417 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=windows-1251"> 
+  <title>Coverage Report > SearchServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">searchengine.services.implementations</a>
+</div>
+
+<h1>Coverage Summary for Class: SearchServiceImpl (searchengine.services.implementations)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">SearchServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (12/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    22,6%
+  </span>
+  <span class="absValue">
+    (14/62)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    32,3%
+  </span>
+  <span class="absValue">
+    (51/158)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package searchengine.services.implementations;
+&nbsp;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import lombok.extern.log4j.Log4j2;
+&nbsp;import org.jsoup.Jsoup;
+&nbsp;import org.jsoup.nodes.Document;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import searchengine.dto.query.QueryResponseData;
+&nbsp;import searchengine.dto.query.QueryResultPage;
+&nbsp;import searchengine.model.LemmaEntity;
+&nbsp;import searchengine.model.PageEntity;
+&nbsp;import searchengine.model.SiteEntity;
+&nbsp;import searchengine.model.Status;
+&nbsp;import searchengine.repository.IndexRepository;
+&nbsp;import searchengine.repository.LemmaRepository;
+&nbsp;import searchengine.repository.PageRepository;
+&nbsp;import searchengine.repository.SiteRepository;
+&nbsp;import searchengine.services.interfaces.LemmaService;
+&nbsp;import searchengine.services.interfaces.SearchService;
+&nbsp;import searchengine.utilities.ConfigSettings;
+&nbsp;import searchengine.utilities.TextHelper;
+&nbsp;
+&nbsp;import java.util.*;
+&nbsp;import java.util.function.Function;
+&nbsp;import java.util.stream.Collectors;
+&nbsp;import java.util.stream.IntStream;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;@RequiredArgsConstructor</b>
+<b class="fc">&nbsp;@Log4j2</b>
+&nbsp;public class SearchServiceImpl implements SearchService {
+&nbsp;
+&nbsp;    private final LemmaService lemmaService;
+&nbsp;    private final SiteRepository siteRepository;
+&nbsp;    private final PageRepository pageRepository;
+&nbsp;    private final LemmaRepository lemmaRepository;
+&nbsp;    private final IndexRepository indexRepository;
+&nbsp;    private final ConfigSettings properties;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public ResponseEntity&lt;QueryResponseData&gt; search(String query, String site, int offset, int limit) {
+<b class="fc">&nbsp;        QueryResponseData searchResult = new QueryResponseData();</b>
+<b class="fc">&nbsp;        searchResult.setResult(false);</b>
+<b class="fc">&nbsp;        if (!isQueryExists(query)) {</b>
+<b class="fc">&nbsp;            searchResult.setError(&quot;Empty query query&quot;);</b>
+<b class="fc">&nbsp;        } else if (isIndexingOrFailed(site)) {</b>
+<b class="fc">&nbsp;            searchResult.setError(&quot;Indexing not finished yet successfully&quot;);</b>
+&nbsp;        } else {
+<b class="fc">&nbsp;            searchResult = getSearchResult(query, site, offset, limit);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return ResponseEntity.ok(searchResult);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isQueryExists(String query) {
+<b class="fc">&nbsp;        return TextHelper.isStringExists(query);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isIndexingOrFailed(String siteName) {
+<b class="fc">&nbsp;        siteName = siteName + &quot;/&quot;;</b>
+<b class="fc">&nbsp;        SiteEntity siteEntity = siteRepository.findSiteEntityByUrl(siteName);</b>
+<b class="pc">&nbsp;        if (siteEntity != null) {</b>
+<b class="nc">&nbsp;            return !siteEntity.getStatus().equals(Status.INDEXED);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return siteRepository.existsByStatus(Status.INDEXING) || siteRepository.existsByStatus(Status.FAILED);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private QueryResponseData getSearchResult(String query, String site, int offset, int limit) {
+<b class="fc">&nbsp;        site = site + &quot;/&quot;;</b>
+<b class="fc">&nbsp;        QueryResponseData searchResult = getSearchResult(query, site);</b>
+&nbsp;
+<b class="fc">&nbsp;        int noOfPages = searchResult.getCount();</b>
+<b class="fc">&nbsp;        int dataArrayEndIndex = Math.min(noOfPages, offset + limit);</b>
+&nbsp;        int dataValueSize;
+<b class="pc">&nbsp;        if (noOfPages &lt; offset) {</b>
+<b class="fc">&nbsp;            dataValueSize = 0;</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            dataValueSize = dataArrayEndIndex - offset;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        List&lt;QueryResultPage&gt; allPages = searchResult.getData();</b>
+<b class="fc">&nbsp;        List&lt;QueryResultPage&gt; limitedPages = new ArrayList&lt;&gt;();</b>
+<b class="pc">&nbsp;        for (int i = offset; i &lt; offset + dataValueSize; i++) {</b>
+<b class="nc">&nbsp;            limitedPages.add(allPages.get(i));</b>
+&nbsp;        }
+<b class="fc">&nbsp;        searchResult.setData(limitedPages);</b>
+<b class="fc">&nbsp;        return searchResult;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private QueryResponseData getSearchResult(String query, String siteUrl) {
+<b class="fc">&nbsp;        QueryResponseData queryResponseData = new QueryResponseData();</b>
+<b class="fc">&nbsp;        queryResponseData.setResult(true);</b>
+&nbsp;
+<b class="fc">&nbsp;        List&lt;SiteEntity&gt; siteEntityList = siteRepository.findAll();</b>
+<b class="fc">&nbsp;        SiteEntity searchingSite = getSearchingSiteEntity(siteEntityList, siteUrl);</b>
+<b class="fc">&nbsp;        List&lt;LemmaEntity&gt; sortedLemmasFromQuery = getSortedByFrequencyAscLemmasQueryList(query, searchingSite);</b>
+<b class="fc">&nbsp;        List&lt;LemmaEntity&gt; frequentLemmas = getFrequentLemmas(siteEntityList, sortedLemmasFromQuery);</b>
+<b class="pc">&nbsp;        if (sortedLemmasFromQuery.isEmpty() || sortedLemmasFromQuery.size() == frequentLemmas.size()) {</b>
+<b class="fc">&nbsp;            return returnEmptySearchResult(queryResponseData);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        Set&lt;Integer&gt; pagesIdSet = getAllPagesId(sortedLemmasFromQuery);</b>
+<b class="nc">&nbsp;        List&lt;PageEntity&gt; pagesFound = pageRepository.findAllById(pagesIdSet);</b>
+<b class="nc">&nbsp;        if (searchingSite == null) {</b>
+<b class="nc">&nbsp;            pagesFound = filterPages(pagesFound, sortedLemmasFromQuery, frequentLemmas);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        if (pagesFound.isEmpty()) {</b>
+<b class="nc">&nbsp;            return returnEmptySearchResult(queryResponseData);</b>
+&nbsp;        }
+&nbsp;
+<b class="nc">&nbsp;        List&lt;QueryResultPage&gt; pagesFoundSorted = getSortedPages(pagesFound, sortedLemmasFromQuery);</b>
+<b class="nc">&nbsp;        return putPagesIntoSearchResultResponse(queryResponseData, pagesFoundSorted);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private QueryResponseData putPagesIntoSearchResultResponse(
+&nbsp;            QueryResponseData response, List&lt;QueryResultPage&gt; pageList
+&nbsp;    ) {
+<b class="nc">&nbsp;        response.setCount(pageList.size());</b>
+<b class="nc">&nbsp;        response.setData(pageList);</b>
+<b class="nc">&nbsp;        return response;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;PageEntity&gt; filterPages(
+&nbsp;            List&lt;PageEntity&gt; pages, List&lt;LemmaEntity&gt; allLemmas, List&lt;LemmaEntity&gt; frequentLemmas
+&nbsp;    ) {
+<b class="nc">&nbsp;        List&lt;PageEntity&gt; filteredPages = pages;</b>
+<b class="nc">&nbsp;        Map&lt;SiteEntity, List&lt;LemmaEntity&gt;&gt; groupedLemmas =</b>
+<b class="nc">&nbsp;                allLemmas.stream().collect(Collectors.groupingBy(LemmaEntity::getSite));</b>
+<b class="nc">&nbsp;        Map&lt;SiteEntity, List&lt;LemmaEntity&gt;&gt; groupedFrequentLemmas =</b>
+<b class="nc">&nbsp;                frequentLemmas.stream().collect(Collectors.groupingBy(LemmaEntity::getSite));</b>
+<b class="nc">&nbsp;        for (SiteEntity site : groupedLemmas.keySet()) {</b>
+<b class="nc">&nbsp;            if ((groupedLemmas.containsKey(site) &amp;&amp; groupedFrequentLemmas.containsKey(site))</b>
+<b class="nc">&nbsp;                    &amp;&amp; groupedLemmas.get(site).size() == groupedFrequentLemmas.get(site).size()) {</b>
+<b class="nc">&nbsp;                filteredPages = filteredPages.stream()</b>
+<b class="nc">&nbsp;                        .filter(pageEntity -&gt; !pageEntity.getSite().equals(site)).toList();</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return filteredPages;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private QueryResponseData returnEmptySearchResult(QueryResponseData searchResult) {
+<b class="fc">&nbsp;        log.info(&quot;Nothing found!&quot;);</b>
+<b class="fc">&nbsp;        searchResult.setCount(0);</b>
+<b class="fc">&nbsp;        return searchResult;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private SiteEntity getSearchingSiteEntity(List&lt;SiteEntity&gt; sites, String url) {
+<b class="pc">&nbsp;        for (SiteEntity siteEntity : sites) {</b>
+<b class="nc">&nbsp;            if (siteEntity.getUrl().equals(url)) {</b>
+<b class="nc">&nbsp;                return siteEntity;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;QueryResultPage&gt; getSortedPages(List&lt;PageEntity&gt; pages, List&lt;LemmaEntity&gt; lemmaList) {
+<b class="nc">&nbsp;        List&lt;QueryResultPage&gt; queryResultPageList = new ArrayList&lt;&gt;();</b>
+<b class="nc">&nbsp;        List&lt;Integer&gt; lemmasIdList = lemmaList.stream().map(LemmaEntity::getId).toList();</b>
+<b class="nc">&nbsp;        Set&lt;String&gt; lemmasStringSet = lemmaList.stream().map(LemmaEntity::getLemma).collect(Collectors.toSet());</b>
+&nbsp;
+<b class="nc">&nbsp;        for (PageEntity pageEntity : pages) {</b>
+<b class="nc">&nbsp;            QueryResultPage queryResultPage = createSearchResultPage(pageEntity, lemmasIdList, lemmasStringSet);</b>
+<b class="nc">&nbsp;            if (queryResultPage.getSnippet().isEmpty()) {</b>
+&nbsp;                continue;
+&nbsp;            }
+<b class="nc">&nbsp;            queryResultPageList.add(queryResultPage);</b>
+&nbsp;        }
+<b class="nc">&nbsp;        queryResultPageList.sort(Comparator.comparing(QueryResultPage::getRelevance).reversed()</b>
+<b class="nc">&nbsp;                .thenComparing(QueryResultPage::getTitle));</b>
+<b class="nc">&nbsp;        convertAbsoluteRelevanceToRelative(queryResultPageList);</b>
+<b class="nc">&nbsp;        return queryResultPageList;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private QueryResultPage createSearchResultPage(
+&nbsp;            PageEntity pageEntity, List&lt;Integer&gt; lemmasIdList, Set&lt;String&gt; lemmasStringSet
+&nbsp;    ) {
+<b class="nc">&nbsp;        SiteEntity site = pageEntity.getSite();</b>
+<b class="nc">&nbsp;        String siteUrl = TextHelper.cutSlash(site.getUrl());</b>
+<b class="nc">&nbsp;        String siteName = site.getName();</b>
+<b class="nc">&nbsp;        String pagePath = pageEntity.getPath();</b>
+<b class="nc">&nbsp;        Document document = Jsoup.parse(pageEntity.getContent());</b>
+<b class="nc">&nbsp;        String title = document.title();</b>
+&nbsp;
+<b class="nc">&nbsp;        String snippet = getSnippet(document, lemmasStringSet);</b>
+<b class="nc">&nbsp;        Float relevanceWrapped = indexRepository.getAbsRelevance(pageEntity.getId(), lemmasIdList);</b>
+<b class="nc">&nbsp;        float relevance = relevanceWrapped == null ? 0 : relevanceWrapped;</b>
+&nbsp;
+<b class="nc">&nbsp;        QueryResultPage queryResultPage = new QueryResultPage();</b>
+<b class="nc">&nbsp;        queryResultPage.setSite(siteUrl);</b>
+<b class="nc">&nbsp;        queryResultPage.setSiteName(siteName);</b>
+<b class="nc">&nbsp;        queryResultPage.setUri(pagePath);</b>
+<b class="nc">&nbsp;        queryResultPage.setTitle(title);</b>
+<b class="nc">&nbsp;        queryResultPage.setSnippet(snippet);</b>
+<b class="nc">&nbsp;        queryResultPage.setRelevance(relevance);</b>
+<b class="nc">&nbsp;        return queryResultPage;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Set&lt;Integer&gt; getAllPagesId(List&lt;LemmaEntity&gt; lemmasQueryList) {
+<b class="nc">&nbsp;        Map&lt;String, Integer&gt; frequencyLemmaMap = lemmasQueryList.stream()</b>
+<b class="nc">&nbsp;                .collect(Collectors.groupingBy(LemmaEntity::getLemma, Collectors.summingInt(LemmaEntity::getFrequency)));</b>
+&nbsp;
+<b class="nc">&nbsp;        List&lt;String&gt; lemmasSortedAscList =</b>
+<b class="nc">&nbsp;                frequencyLemmaMap.entrySet().stream().sorted(Map.Entry.comparingByValue()).map(Map.Entry::getKey).toList();</b>
+&nbsp;
+<b class="nc">&nbsp;        Map&lt;String, Set&lt;Integer&gt;&gt; gropedLemmaIds = lemmasQueryList.stream().collect(</b>
+<b class="nc">&nbsp;                Collectors.groupingBy(LemmaEntity::getLemma, Collectors.mapping(LemmaEntity::getId, Collectors.toSet()))</b>
+&nbsp;        );
+&nbsp;
+<b class="nc">&nbsp;        return findPagesId(lemmasSortedAscList, gropedLemmaIds);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Set&lt;Integer&gt; findPagesId(List&lt;String&gt; lemmasSorted, Map&lt;String, Set&lt;Integer&gt;&gt; gropedLemmaIdMap) {
+<b class="nc">&nbsp;        String firstLemma = lemmasSorted.get(0);</b>
+<b class="nc">&nbsp;        Set&lt;Integer&gt; firstLemmaIdsSet = gropedLemmaIdMap.get(firstLemma);</b>
+<b class="nc">&nbsp;        Set&lt;Integer&gt; pagesIdResultSet = indexRepository.findPagesIdByLemmaIdIn(firstLemmaIdsSet);</b>
+&nbsp;
+&nbsp;        String currentLemma;
+&nbsp;        Set&lt;Integer&gt; currentLemmasIdSet;
+<b class="nc">&nbsp;        Set&lt;Integer&gt; pagesIdTempSet = new HashSet&lt;&gt;();</b>
+<b class="nc">&nbsp;        for (int i = 1; i &lt; lemmasSorted.size(); i++) {</b>
+<b class="nc">&nbsp;            pagesIdTempSet.clear();</b>
+<b class="nc">&nbsp;            currentLemma = lemmasSorted.get(i);</b>
+<b class="nc">&nbsp;            currentLemmasIdSet = gropedLemmaIdMap.get(currentLemma);</b>
+<b class="nc">&nbsp;            pagesIdTempSet = indexRepository.findPagesIdByLemmaIdIn(currentLemmasIdSet);</b>
+<b class="nc">&nbsp;            pagesIdResultSet.retainAll(pagesIdTempSet);</b>
+<b class="nc">&nbsp;            if (pagesIdResultSet.isEmpty()) {</b>
+<b class="nc">&nbsp;                return Collections.emptySet();</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return pagesIdResultSet;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;LemmaEntity&gt; getSortedByFrequencyAscLemmasQueryList(String query, SiteEntity siteEntity) {
+<b class="fc">&nbsp;        Set&lt;String&gt; queryWordsSet = lemmaService.getLemmasCountMap(query).keySet();</b>
+&nbsp;        List&lt;LemmaEntity&gt; lemmaEntityList;
+<b class="pc">&nbsp;        if (siteEntity == null) {</b>
+<b class="fc">&nbsp;            lemmaEntityList = lemmaRepository.findLemmaEntitiesByLemmaIn(queryWordsSet);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            lemmaEntityList = lemmaRepository.findLemmaEntitiesByLemmaInAndSite(queryWordsSet, siteEntity);</b>
+&nbsp;        }
+<b class="pc">&nbsp;        lemmaEntityList.sort((l1, l2) -&gt; l1.getFrequency() &lt; l2.getFrequency() ? -1 : 1);</b>
+<b class="fc">&nbsp;        return lemmaEntityList;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private void convertAbsoluteRelevanceToRelative(List&lt;QueryResultPage&gt; queryResultPageList) {
+<b class="nc">&nbsp;        float maxRelevanceValue = queryResultPageList.get(0).getRelevance();</b>
+<b class="nc">&nbsp;        for (QueryResultPage result : queryResultPageList) {</b>
+<b class="nc">&nbsp;            result.setRelevance(result.getRelevance() / maxRelevanceValue);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    private String getSnippet(Document document, Set&lt;String&gt; querySet) {
+<b class="nc">&nbsp;        String documentText = document.text();</b>
+<b class="nc">&nbsp;        List&lt;String&gt; textList = new ArrayList&lt;&gt;(Arrays.asList(documentText.split(&quot;\\s+&quot;)));</b>
+<b class="nc">&nbsp;        List&lt;String&gt; textListLemmatized = lemmaService.getLemmatizedList(textList);</b>
+<b class="nc">&nbsp;        Map&lt;Integer, String&gt; textMapLemmatized = IntStream.range(0, textListLemmatized.size()).boxed()</b>
+<b class="nc">&nbsp;                .collect(Collectors.toMap(Function.identity(), textListLemmatized::get));</b>
+<b class="nc">&nbsp;        Map&lt;Integer, String&gt; filteredTextMapLemmatized = textMapLemmatized.entrySet().stream()</b>
+<b class="nc">&nbsp;                .filter(e -&gt; querySet.contains(e.getValue()))</b>
+<b class="nc">&nbsp;                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));</b>
+<b class="nc">&nbsp;        Integer middlePosition = filteredTextMapLemmatized.keySet().stream()</b>
+<b class="nc">&nbsp;                .min(Comparator.comparingInt(i -&gt; Math.abs(i - textListLemmatized.size() / 2)))</b>
+<b class="nc">&nbsp;                .orElse(null);</b>
+<b class="nc">&nbsp;        if (middlePosition == null) {</b>
+<b class="nc">&nbsp;            return &quot;&quot;;</b>
+&nbsp;        }
+<b class="nc">&nbsp;        int start = Math.max(0, middlePosition - 100 / (2 * 5)); // Средняя длина слова ~5 символов</b>
+<b class="nc">&nbsp;        int end = Math.min(textList.size(), start + 200 / 5);</b>
+<b class="nc">&nbsp;        StringBuilder snippetBuilder = new StringBuilder();</b>
+<b class="nc">&nbsp;        for (int i = start; i &lt; end; i++) {</b>
+<b class="nc">&nbsp;            if (filteredTextMapLemmatized.containsKey(i)) {</b>
+<b class="nc">&nbsp;                snippetBuilder.append(&quot;&lt;b&gt;&quot;).append(textList.get(i)).append(&quot;&lt;/b&gt; &quot;);</b>
+&nbsp;            } else {
+<b class="nc">&nbsp;                snippetBuilder.append(textList.get(i)).append(&quot; &quot;);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        String snippet = snippetBuilder.toString().trim();</b>
+<b class="nc">&nbsp;        return snippet.length() &gt; 200 ? snippet.substring(0, 200) + &quot;...&quot; : snippet;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private List&lt;LemmaEntity&gt; getFrequentLemmas(List&lt;SiteEntity&gt; siteEntityList, List&lt;LemmaEntity&gt; lemmaList) {
+<b class="fc">&nbsp;        Map&lt;Integer, Float&gt; frequentWordsBorderMap = getFrequencyLimitForEachSite(siteEntityList);</b>
+<b class="fc">&nbsp;        List&lt;LemmaEntity&gt; frequentLemmas = new ArrayList&lt;&gt;();</b>
+<b class="pc">&nbsp;        for (LemmaEntity lemma : new ArrayList&lt;&gt;(lemmaList)) {</b>
+<b class="nc">&nbsp;            int siteId = lemma.getSite().getId();</b>
+<b class="nc">&nbsp;            if (lemma.getFrequency() &gt; frequentWordsBorderMap.get(siteId)) {</b>
+<b class="nc">&nbsp;                frequentLemmas.add(lemma);</b>
+&nbsp;            }
+&nbsp;        }
+<b class="fc">&nbsp;        return frequentLemmas;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private Map&lt;Integer, Float&gt; getFrequencyLimitForEachSite(List&lt;SiteEntity&gt; siteList) {
+<b class="fc">&nbsp;        Map&lt;Integer, Float&gt; frequencyMap = new HashMap&lt;&gt;();</b>
+<b class="pc">&nbsp;        for (SiteEntity site : siteList) {</b>
+<b class="nc">&nbsp;            int id = site.getId();</b>
+<b class="nc">&nbsp;            float limit = pageRepository.getPageFrequencyOccurrence(properties.getPageFrequencyLimit(), id);</b>
+<b class="nc">&nbsp;            frequencyMap.put(id, limit);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return frequencyMap;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-04-17 21:10</div>
+</div>
+</body>
+</html>

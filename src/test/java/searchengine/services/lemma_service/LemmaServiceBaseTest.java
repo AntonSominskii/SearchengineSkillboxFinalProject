@@ -1,8 +1,7 @@
-package searchengine.services.implementations;
+package searchengine.services.lemma_service;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import searchengine.services.interfaces.LemmaService;
@@ -10,19 +9,13 @@ import searchengine.services.interfaces.LemmaService;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 @SpringBootTest
-class LemmaServiceImplTest {
-
-    private final LemmaService lemmaService;
-    private String text;
-    private Map<String, Integer> expectedMap;
+public abstract class LemmaServiceBaseTest {
 
     @Autowired
-    public LemmaServiceImplTest(LemmaService lemmaService) {
-        this.lemmaService = lemmaService;
-    }
+    protected LemmaService lemmaService;
+    protected String text;
+    protected Map<String, Integer> expectedMap;
 
     @BeforeEach
     void setUp() {
@@ -49,14 +42,5 @@ class LemmaServiceImplTest {
     void tearDown() {
         text = null;
         expectedMap = null;
-    }
-
-    @Test
-    void getLemmasCountMap() {
-        Map<String, Integer> actualMap = lemmaService.getLemmasCountMap(text);
-        assertEquals(expectedMap, actualMap);
-
-        System.out.println("Ожидаемый результат: " + expectedMap);
-        System.out.println("Фактический результат: " + actualMap);
     }
 }

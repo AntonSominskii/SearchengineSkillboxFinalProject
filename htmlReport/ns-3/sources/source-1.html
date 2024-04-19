@@ -1,0 +1,172 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=windows-1251"> 
+  <title>Coverage Report > ApiController</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">searchengine.controllers</a>
+</div>
+
+<h1>Coverage Summary for Class: ApiController (searchengine.controllers)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ApiController</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    85,7%
+  </span>
+  <span class="absValue">
+    (6/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    78,9%
+  </span>
+  <span class="absValue">
+    (15/19)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package searchengine.controllers;
+&nbsp;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import org.springframework.http.HttpStatus;
+&nbsp;import org.springframework.http.ResponseEntity;
+&nbsp;import org.springframework.web.bind.annotation.*;
+&nbsp;import searchengine.dto.query.ActionResponse;
+&nbsp;import searchengine.dto.query.QueryResponseData;
+&nbsp;import searchengine.dto.query.StatisticsResponse;
+&nbsp;import searchengine.services.interfaces.IndexingService;
+&nbsp;import searchengine.services.interfaces.SearchService;
+&nbsp;import searchengine.services.interfaces.StatisticsService;
+&nbsp;import lombok.extern.log4j.Log4j2;
+&nbsp;
+&nbsp;@RestController
+&nbsp;@RequestMapping(&quot;/api&quot;)
+<b class="fc">&nbsp;@RequiredArgsConstructor</b>
+<b class="fc">&nbsp;@Log4j2</b>
+&nbsp;public class ApiController {
+&nbsp;
+&nbsp;    private final StatisticsService statisticsService;
+&nbsp;    private final IndexingService indexingService;
+&nbsp;    private final SearchService searchService;
+&nbsp;
+&nbsp;    @GetMapping(&quot;/statistics&quot;)
+&nbsp;    public ResponseEntity&lt;StatisticsResponse&gt; statistics() {
+&nbsp;        try {
+<b class="fc">&nbsp;            return ResponseEntity.ok(statisticsService.getStatistics());</b>
+<b class="nc">&nbsp;        } catch (Exception e) {</b>
+<b class="nc">&nbsp;            log.error(&quot;Error when getting statistics&quot;, e);</b>
+<b class="nc">&nbsp;            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/startIndexing&quot;)
+&nbsp;    public ResponseEntity&lt;ActionResponse&gt; startIndexing() {
+<b class="fc">&nbsp;        log.info(&quot;Indexing request received&quot;);</b>
+<b class="fc">&nbsp;        ResponseEntity&lt;ActionResponse&gt; response = indexingService.startIndexing();</b>
+<b class="fc">&nbsp;        log.info(&quot;Indexing started: {}&quot;, response.getBody());</b>
+<b class="fc">&nbsp;        return response;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/stopIndexing&quot;)
+&nbsp;    public ResponseEntity&lt;ActionResponse&gt; stopIndexing() {
+<b class="fc">&nbsp;        log.info(&quot;Stop indexing request received&quot;);</b>
+<b class="fc">&nbsp;        ResponseEntity&lt;ActionResponse&gt; response = indexingService.stopIndexing();</b>
+<b class="fc">&nbsp;        log.info(&quot;Indexing stopped: {}&quot;, response.getBody());</b>
+<b class="fc">&nbsp;        return response;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @PostMapping(&quot;/indexPage&quot;)
+&nbsp;    public ResponseEntity&lt;ActionResponse&gt; indexPage(@RequestParam(name = &quot;url&quot;, required = false) String path) {
+<b class="nc">&nbsp;        return indexingService.indexPage(path);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @GetMapping(&quot;/search&quot;)
+&nbsp;    public ResponseEntity&lt;QueryResponseData&gt; search(
+&nbsp;            @RequestParam(name = &quot;query&quot;, required = false) String query,
+&nbsp;            @RequestParam(name = &quot;site&quot;, required = false) String site,
+&nbsp;            @RequestParam(name = &quot;offset&quot;, required = false) Integer offset,
+&nbsp;            @RequestParam(name = &quot;limit&quot;, required = false) Integer limit
+&nbsp;    ) {
+<b class="fc">&nbsp;        log.info(&quot;Search request received: query={}, site={}, offset={}, limit={}&quot;, query, site, offset, limit);</b>
+<b class="fc">&nbsp;        ResponseEntity&lt;QueryResponseData&gt; response = searchService.search(query, site, offset, limit);</b>
+<b class="fc">&nbsp;        log.info(&quot;Search response: {}&quot;, response);</b>
+<b class="fc">&nbsp;        return response;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-04-17 21:10</div>
+</div>
+</body>
+</html>

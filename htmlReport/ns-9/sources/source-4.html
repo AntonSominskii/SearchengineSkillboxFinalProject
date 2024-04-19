@@ -1,0 +1,189 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=windows-1251"> 
+  <title>Coverage Report > StatisticsServiceImpl</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">searchengine.services.implementations</a>
+</div>
+
+<h1>Coverage Summary for Class: StatisticsServiceImpl (searchengine.services.implementations)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">StatisticsServiceImpl</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    60%
+  </span>
+  <span class="absValue">
+    (3/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    25%
+  </span>
+  <span class="absValue">
+    (1/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    46,9%
+  </span>
+  <span class="absValue">
+    (15/32)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package searchengine.services.implementations;
+&nbsp;
+&nbsp;import lombok.RequiredArgsConstructor;
+&nbsp;import org.springframework.stereotype.Service;
+&nbsp;import searchengine.config.SitesList;
+&nbsp;import searchengine.dto.query.StatisticsResponse;
+&nbsp;import searchengine.dto.statistics.DetailedStatisticsItem;
+&nbsp;import searchengine.dto.statistics.StatisticsData;
+&nbsp;import searchengine.dto.statistics.TotalStatistics;
+&nbsp;import searchengine.model.SiteEntity;
+&nbsp;import searchengine.model.Status;
+&nbsp;import searchengine.repository.LemmaRepository;
+&nbsp;import searchengine.repository.PageRepository;
+&nbsp;import searchengine.repository.SiteRepository;
+&nbsp;import searchengine.services.interfaces.StatisticsService;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;@Service
+<b class="fc">&nbsp;@RequiredArgsConstructor</b>
+&nbsp;public class StatisticsServiceImpl implements StatisticsService {
+&nbsp;
+&nbsp;    private final SitesList sites;
+&nbsp;    private final SiteRepository siteRepository;
+&nbsp;    private final PageRepository pageRepository;
+&nbsp;    private final LemmaRepository lemmaRepository;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public StatisticsResponse getStatistics() {
+<b class="fc">&nbsp;        TotalStatistics total = new TotalStatistics();</b>
+<b class="fc">&nbsp;        total.setSites(sites.getSites().size());</b>
+<b class="fc">&nbsp;        total.setIndexing(isIndexing());</b>
+<b class="fc">&nbsp;        List&lt;DetailedStatisticsItem&gt; detailed = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;        List&lt;SiteEntity&gt; siteEntityList = siteRepository.findAll();</b>
+<b class="pc">&nbsp;        for (SiteEntity siteEntity : siteEntityList) {</b>
+<b class="nc">&nbsp;            DetailedStatisticsItem item = new DetailedStatisticsItem();</b>
+<b class="nc">&nbsp;            item.setName(siteEntity.getName());</b>
+<b class="nc">&nbsp;            String siteUrl = siteEntity.getUrl();</b>
+<b class="nc">&nbsp;            item.setUrl(siteUrl.substring(0, siteUrl.length() - 1));</b>
+<b class="nc">&nbsp;            int pages = countPagesBySiteEntity(siteEntity);</b>
+<b class="nc">&nbsp;            int lemmas = countLemmasBySiteEntity(siteEntity);</b>
+<b class="nc">&nbsp;            item.setPages(pages);</b>
+<b class="nc">&nbsp;            item.setLemmas(lemmas);</b>
+<b class="nc">&nbsp;            item.setStatus(siteEntity.getStatus().toString());</b>
+<b class="nc">&nbsp;            String error = siteEntity.getLastError();</b>
+<b class="nc">&nbsp;            item.setError(error == null ? &quot;No errors \u2705&quot; : error);</b>
+<b class="nc">&nbsp;            item.setStatusTime(siteEntity.getStatusTime().getTime());</b>
+<b class="nc">&nbsp;            total.setPages(total.getPages() + pages);</b>
+<b class="nc">&nbsp;            total.setLemmas(total.getLemmas() + lemmas);</b>
+<b class="nc">&nbsp;            detailed.add(item);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        StatisticsResponse response = new StatisticsResponse();</b>
+<b class="fc">&nbsp;        StatisticsData data = new StatisticsData();</b>
+<b class="fc">&nbsp;        data.setTotal(total);</b>
+<b class="fc">&nbsp;        data.setDetailed(detailed);</b>
+<b class="fc">&nbsp;        response.setStatistics(data);</b>
+<b class="fc">&nbsp;        response.setResult(true);</b>
+<b class="fc">&nbsp;        return response;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private boolean isIndexing() {
+<b class="fc">&nbsp;        return siteRepository.existsByStatus(Status.INDEXING);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private int countPagesBySiteEntity(SiteEntity site) {
+<b class="nc">&nbsp;        return pageRepository.countPageEntitiesBySite(site);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    private int countLemmasBySiteEntity(SiteEntity site) {
+<b class="nc">&nbsp;        return lemmaRepository.countLemmaEntitiesBySite(site);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2024-04-17 21:10</div>
+</div>
+</body>
+</html>

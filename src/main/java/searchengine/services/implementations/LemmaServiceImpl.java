@@ -20,8 +20,15 @@ public class LemmaServiceImpl implements LemmaService {
 
     private final LuceneMorphology ruLuceneMorphology;
 
+//        @Override
+//    public Map<String, Integer> getLemmasCountMap(String text) {
+//        Map<String, Integer> lemmasCountMap = new HashMap<>();
+
     @Override
     public Map<String, Integer> getLemmasCountMap(String text) {
+        if (text == null) {
+            return new HashMap<>(); // Возвращаем пустой словарь, если текст равен null.
+        }
         Map<String, Integer> lemmasCountMap = new HashMap<>();
         for (String word : getWordsWithoutServicePartsOfSpeech(text)) {
             for (String wordNormalForm : ruLuceneMorphology.getNormalForms(word)) {
