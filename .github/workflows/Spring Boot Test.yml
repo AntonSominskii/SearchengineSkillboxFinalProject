@@ -22,10 +22,9 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          server-id: skillbox-gitlab
-          server-username: gitlab
-          server-password: ${{ secrets.MAVEN_TOKEN }}
-          settings-path: ${{ github.workspace }}/settings.xml
+
+      - name: Remove settings.xml directory if it exists
+        run: rm -rf ${{ github.workspace }}/settings.xml
 
       - name: Create Maven settings.xml
         run: |
@@ -56,10 +55,6 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          server-id: skillbox-gitlab
-          server-username: gitlab
-          server-password: ${{ secrets.MAVEN_TOKEN }}
-          settings-path: ${{ github.workspace }}/settings.xml
 
       - name: Test with Maven
         run: mvn -s ${{ github.workspace }}/settings.xml test
