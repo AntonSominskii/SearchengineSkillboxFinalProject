@@ -22,7 +22,9 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          server-id: skillbox-gitlab # ID сервера, используемый в settings.xml
+          server-id: skillbox-gitlab
+          server-username: gitlab
+          server-password: ${{ secrets.MAVEN_TOKEN }}
           settings-path: ${{ github.workspace }}/settings.xml
 
       - name: Create Maven settings.xml
@@ -54,7 +56,9 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          server-id: skillbox-gitlab # ID сервера, используемый в settings.xml
+          server-id: skillbox-gitlab
+          server-username: gitlab
+          server-password: ${{ secrets.MAVEN_TOKEN }}
           settings-path: ${{ github.workspace }}/settings.xml
 
       - name: Test with Maven
