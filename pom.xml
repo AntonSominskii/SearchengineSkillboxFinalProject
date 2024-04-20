@@ -18,7 +18,7 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-             <privateToken>wtb5axJDFX9Vm_W1Lexg</privateToken>
+             <privateToken>glpat-Viu1C6oUSddYB3JdKviW</privateToken>
     </properties>
 
     <parent>
