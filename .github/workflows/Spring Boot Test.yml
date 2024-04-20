@@ -22,9 +22,25 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          server-id: skillbox-gitlab # ID сервера, используемый в settings.xml
+          settings-path: ${{ github.workspace }}/settings.xml
+
+      - name: Create Maven settings.xml
+        run: |
+          echo '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" 
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                   xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+              <servers>
+                <server>
+                  <id>skillbox-gitlab</id>
+                  <username>gitlab</username>
+                  <password>${{ secrets.MAVEN_TOKEN }}</password>
+                </server>
+              </servers>
+            </settings>' > ${{ github.workspace }}/settings.xml
 
       - name: Build with Maven
-        run: mvn clean install
+        run: mvn -s ${{ github.workspace }}/settings.xml clean install
 
   test:
     needs: build
@@ -38,12 +54,14 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          server-id: skillbox-gitlab # ID сервера, используемый в settings.xml
+          settings-path: ${{ github.workspace }}/settings.xml
 
       - name: Test with Maven
-        run: mvn test
+        run: mvn -s ${{ github.workspace }}/settings.xml test
 
       - name: Generate Allure Report
-        run: mvn allure:report
+        run: mvn -s ${{ github.workspace }}/settings.xml allure:report
 
       - uses: actions/upload-artifact@v3
         with:
