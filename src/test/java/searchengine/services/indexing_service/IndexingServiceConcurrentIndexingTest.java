@@ -4,6 +4,7 @@ import io.qameta.allure.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import searchengine.dto.query.ActionResponse;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,6 +18,7 @@ public class IndexingServiceConcurrentIndexingTest extends IndexingServiceBaseTe
     @Story("Множественная индексация")
     @DisplayName("Start Indexing When Already Indexing Should Not Start Again")
     @Description("Проверка корректности обработки попыток начать индексацию, когда одна уже выполняется")
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
     void startIndexing_WhenAlreadyIndexing_ShouldNotStartAgain() {
         indexingService.startIndexing();
 
