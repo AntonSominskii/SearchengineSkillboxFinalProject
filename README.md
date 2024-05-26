@@ -33,22 +33,7 @@
 
 1. Установите Java 17+ и MySQL.
 2. Создайте пустую базу данных search_engine с использованием кодировки utf8mb4.
-3. В файл конфигурации settings.xml C:\Users\Username\.m2 добавьте настройки:
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
-<servers>
-<server>
-<id>skillbox-gitlab</id>
-<configuration>
-<httpHeaders>
-<property>
-<name>Private-Token</name>
-<value>glpat-Viu1C6oUSddYB3JdKviW</value>
-</property>
-</httpHeaders>
-</configuration>
-</server>
-</servers>
-</settings>
+3. В файл конфигурации settings.xml C:\Users\Username\.m2 добавьте настройки: https://docs.google.com/document/d/1rF_9N1ZbEJwUSxK8VBb1HhqAu7qPYCoM3A4NhiHSY6M/edit?usp=sharing
 4. Клонируйте репозиторий: https://github.com/AntonSominskii/SearchengineSkillboxFinalProject.git.
 5. Укажите параметры подключения к базе данных в application.yaml.
 6. Укажите сайты для индексации.
@@ -91,22 +76,7 @@ This application is designed to search through selected websites. It automatical
 
 1. Install Java 17+ and MySQL.
 2. Create an empty search_engine database using utf8mb4 encoding.
-3. To the configuration file settings.xml C:\Users\Username\.m2 add settings:
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
-<servers>
-<server>
-<id>skillbox-gitlab</id>
-<configuration>
-<httpHeaders>
-<property>
-<name>Private-Token</name>
-<value>glpat-Viu1C6oUSddYB3JdKviW</value>
-</property>
-</httpHeaders>
-</configuration>
-</server>
-</servers>
-</settings>
+3. To the configuration file settings.xml C:\Users\Username\.m2 add settings: https://docs.google.com/document/d/1rF_9N1ZbEJwUSxK8VBb1HhqAu7qPYCoM3A4NhiHSY6M/edit?usp=sharing
 4. Clone the repository: https://github.com/AntonSominskii/SearchengineSkillboxFinalProject.git.
 5. Set database connection parameters in application.yaml.
 6. Specify websites for indexing.
