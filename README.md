@@ -107,11 +107,6 @@ This application is designed to search through selected websites. It automatical
 </server>
 </servers>
 </settings>
-4. Клонируйте репозиторий: https://github.com/AntonSominskii/SearchengineSkillboxFinalProject.git.
-5. Укажите параметры подключения к базе данных в application.yaml.
-6. Укажите сайты для индексации.
-7. Запустите приложение через Spring Boot.
-8. Откройте http://localhost:8080/ в браузере.
 4. Clone the repository: https://github.com/AntonSominskii/SearchengineSkillboxFinalProject.git.
 5. Set database connection parameters in application.yaml.
 6. Specify websites for indexing.
