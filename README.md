@@ -4,6 +4,10 @@
 
 Это приложение предназначено для осуществления поиска по выбранным сайтам. Оно автоматически анализирует и индексирует содержимое сайтов, предоставляя пользователю возможность поиска по индексированным страницам.
 
+Тест-кейсы: https://docs.google.com/document/d/1Ca1FEkLNHphUadxwsykN-9kIk14yWq0979VzgyMP-So/edit?usp=sharing
+
+Тесты Selenide: https://github.com/AntonSominskii/SelenideTestsSearchEngine.git
+
 ## Технологический стек
 
 1. Java 17: Язык программирования.
@@ -46,6 +50,10 @@
 ## Introduction
 
 This application is designed to search through selected websites. It automatically analyzes and indexes website content, allowing users to search through indexed pages.
+
+Test cases: https://docs.google.com/document/d/1Ca1FEkLNHphUadxwsykN-9kIk14yWq0979VzgyMP-So/edit?usp=sharing
+
+Selenide tests: https://github.com/AntonSominskii/SelenideTestsSearchEngine.git
 
 ## Technology Stack
 
